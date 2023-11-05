@@ -1,0 +1,22 @@
+[build-system]
+
+requires = [
+    "poetry>=0.12",
+]
+build-backend = "poetry.masonry.api"
+
+[tool.poetry]
+name = "availability-response"
+version = "2023.1"
+description = "Availability response"
+#readme = "README.rst"
+repository = "https://github.com/inducer/availability-response"
+authors = ["Andreas Kloeckner <inform@tiker.net>"]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.13"
+
+flask = "^3.0.0"
+jinja2 = "^3.1.2"
+
+# vim: foldmethod=marker
