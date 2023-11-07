@@ -9,6 +9,6 @@ module.exports = {
   },
   rules: {
     'no-unused-vars': ['error', { varsIgnorePattern: '^_' }],
-    'no-alert': 'disable'
+    'no-alert': 0
   },
 };

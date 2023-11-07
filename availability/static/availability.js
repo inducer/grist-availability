@@ -67,6 +67,7 @@ function onSubmit() {
   document.getElementById('calendarForm').submit();
 }
 
+// eslint-disable-next-line no-unused-vars
 function initialize(initialDate, events, hasSpans) {
   document.addEventListener(
     'DOMContentLoaded',
