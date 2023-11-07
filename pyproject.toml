@@ -10,7 +10,7 @@ name = "availability-response"
 version = "2023.1"
 description = "Mini web app to collect availability responses"
 
-#readme = "README.rst"
+readme = "README.md"
 repository = "https://github.com/inducer/availability-response"
 authors = ["Andreas Kloeckner <inform@tiker.net>"]
 
