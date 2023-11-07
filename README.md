@@ -1,13 +1,15 @@
 # Collect availability responses (mini-Doodle/WhenIsGood), backed by Grist
 
-This small Flask/Requests-based tool will pull from a table of
-"Availability requests" in
-[Grist](https://github.com/gristlabs/grist-core), show users a
-calendar, allow them to
+Users arrive via a personalized link (`/availability/<key>`),
+created in a table of "Availability requests" in
+[Grist](https://github.com/gristlabs/grist-core).  Users are shown a calendar,
+allowing them to
 
 -   draw their availability over a shown set of ranges,
 -   select yes/no for predefined time slots, and
 -   submit a textual response.
+
+Data from their response is once again recorded in Grist.
 
 Needed configuration: see the [dev script](dev.sh) for needed
 environment variables.
