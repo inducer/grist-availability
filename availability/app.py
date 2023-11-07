@@ -1,7 +1,9 @@
+import json
 import os
 
-from flask import Flask, url_for
+from flask import Flask, request, url_for
 from jinja2 import Environment, PackageLoader, select_autoescape
+
 from .grist_client import GristClient
 
 
@@ -19,13 +21,18 @@ with open(os.environ["GRIST_API_KEY_FILE"], "r") as inf:
 GRIST_DOC_ID = os.environ["GRIST_DOC_ID"]
 
 
-@app.route("/availability/<key>", methods=("GET", "POST"))
+CLIENT = GristClient(GRIST_ROOT_URL, GRIST_API_KEY, GRIST_DOC_ID)
+
+
+@app.get("/availability/<key>")
 def availability(key: str):
-    client = GristClient(GRIST_ROOT_URL, GRIST_API_KEY, GRIST_DOC_ID)
+    avrequest, = CLIENT.get_records("Availability_requests", filter={"Key": [key]})
 
-    avrequest, = client.get_records("Availability_requests", filter={"Key": [key]})
+    if avrequest["fields"]["Responded"]:
+        template = jinja_env.get_template("thanks.html")
+        return template.render()
 
-    timespans = client.get_records(
+    timespans = CLIENT.get_records(
             "Request_timespans",
             filter={"Request": [avrequest["id"]]})
 
@@ -51,10 +58,13 @@ def availability(key: str):
             has_spans = True
         else:
             events.append({
-                        "id": tspan["id"],
                         "start": fields["Start"]*1000,
                         "end": fields["End"]*1000,
-                        "classNames": "avr-unknown",
+                        "extendedProps": {
+                            "type": "slot",
+                            "available": None,
+                            "rspan_id": tspan["id"],
+                            },
                         })
             has_slots = True
 
@@ -66,5 +76,39 @@ def availability(key: str):
             js_url=url_for("static", filename="availability.js"),
             has_slots=has_slots,
             has_spans=has_spans)
+
+
+@app.post("/availability/<key>")
+def post_availability(key: str):
+    cal_data = json.loads(request.form["calendarState"])
+    cal_slots = cal_data["slots"]
+    cal_spans = cal_data["spans"]
+
+    avrequest, = CLIENT.get_records("Availability_requests", filter={"Key": [key]})
+
+    CLIENT.patch_records("Availability_requests", [
+        (avrequest["id"], {"Responded": True, "Response": request.form["response"]})
+        ])
+
+    CLIENT.add_records("Availability", [{
+            "Person": avrequest["fields"]["Person"],
+            "Start": span["start"],
+            "End": span["end"],
+            "Available": True,
+            }
+        for span in cal_spans])
+
+    CLIENT.add_records("Availability", [{
+            "Person": avrequest["fields"]["Person"],
+            "Request_timespan": slot["rspan_id"],
+            "Start": slot["start"],
+            "End": slot["end"],
+            "Available": slot["available"],
+            }
+        for slot in cal_slots])
+
+    template = jinja_env.get_template("thanks.html")
+    return template.render()
+
 
 # vim: foldmethod=marker
