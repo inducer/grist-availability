@@ -22,8 +22,11 @@ from there.
 
 ### Input (mostly)
 
-`Availability_requests`] needs columns:
+`Availability_requests` needs columns:
 
+-   `Request_group`: (int/any) Used to find request timespans.
+    In my case, a reference to another table, `Availability_request_groups`, but
+    it need not be.
 -   `Key`: (text) Used as part of the link to the personalized
     calendar.
 -   `Message`: (text) A message shown to the user on their
@@ -34,6 +37,8 @@ from there.
 
 `Request_timespans` needs columns:
 
+-   `Request_group`: (int/any) Identifier of the group of requests, matches
+    `Availability_requests.Request_group`.
 -   `Request`: (reference to `Availability_requests`)
 -   `Start`: (datetime)
 -   `End`: (datetime)

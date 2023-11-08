@@ -33,7 +33,7 @@ def availability(key: str):
 
     timespans = CLIENT.get_records(
             "Request_timespans",
-            filter={"Request": [avrequest["id"]]})
+            filter={"Request_group": [avrequest["fields"]["Request_group"]]})
 
     has_slots = False
     has_spans = False
