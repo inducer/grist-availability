@@ -3,7 +3,6 @@ import os
 
 from flask import Flask, request, url_for
 from jinja2 import Environment, PackageLoader, select_autoescape
-
 from pygrist_mini import GristClient
 
 
