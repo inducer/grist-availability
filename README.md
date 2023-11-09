@@ -76,4 +76,5 @@ gid = grist-av
 need-app = 1
 workers = 1
 virtualenv=/home/grist-av/grist-availability/.venv
+buffer-size = 16384
 ```
