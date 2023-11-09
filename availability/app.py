@@ -25,7 +25,12 @@ CLIENT = GristClient(GRIST_ROOT_URL, GRIST_API_KEY, GRIST_DOC_ID)
 
 @app.get("/availability/<key>")
 def availability(key: str):
-    avrequest, = CLIENT.get_records("Availability_requests", filter={"Key": [key]})
+    avrequests = CLIENT.get_records("Availability_requests", filter={"Key": [key]})
+    if not avrequests:
+        return "Not found", 404
+    if len(avrequests) > 1:
+        return "More than one record found for request key", 500
+    avrequest, = avrequests
 
     if avrequest["fields"]["Responded"]:
         template = jinja_env.get_template("thanks.html")
