@@ -24,6 +24,6 @@ flask = "^3.0.0"
 jinja2 = "^3.1.2"
 
 requests = "^2.31"
-pygrist-mini  = "^2023.1"
+pygrist-mini  = "^2023.2.1"
 
 # vim: foldmethod=marker
