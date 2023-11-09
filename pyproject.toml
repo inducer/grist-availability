@@ -13,6 +13,9 @@ description = "Mini web app to collect availability responses"
 readme = "README.md"
 repository = "https://github.com/inducer/availability-response"
 authors = ["Andreas Kloeckner <inform@tiker.net>"]
+packages = [
+    { include = "availability" },
+]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.13"
