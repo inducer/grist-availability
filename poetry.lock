@@ -298,13 +298,13 @@ files = [
 
 [[package]]
 name = "pygrist-mini"
-version = "2023.1"
+version = "2023.2.1"
 description = "Minimal Grist API (document) client"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pygrist_mini-2023.1-py2.py3-none-any.whl", hash = "sha256:5b697e6f997fb88a6517d576878378df60e528ffc8d375054864650a71b16062"},
-    {file = "pygrist_mini-2023.1.tar.gz", hash = "sha256:76df59ff768311cba0510850cd3d8e2165e458745d876ebdec24787f5614cf7d"},
+    {file = "pygrist_mini-2023.2.1-py2.py3-none-any.whl", hash = "sha256:7e927ea9dfcd3d4cd5a695444c96d118eed9d0d8a42db52a0d416772d21f514c"},
+    {file = "pygrist_mini-2023.2.1.tar.gz", hash = "sha256:72d8cf3f55da4bbc4c81f6a852225d78fc87bb7689c32d7f557ec7c14abd867e"},
 ]
 
 [package.dependencies]
@@ -383,4 +383,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.13"
-content-hash = "5c32cbb4990f591c127c682f95c8704f0af3b31af053855d3325a36ecf5d3b34"
+content-hash = "284d4e8b2f8d42c741cd3fed7fe86a7d31f76ae5e0202847c7aa0b2da6530cee"
