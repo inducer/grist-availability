@@ -50,6 +50,8 @@ from there.
 
 `Availability`:
 
+-   `Request_group`: (int/any) Identifier of the group of requests, matches
+    `Availability_requests.Request_group`.
 -   `Start`: (datetime)
 -   `End`: (datetime)
 -   `Available`: (bool)

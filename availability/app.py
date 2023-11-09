@@ -31,6 +31,7 @@ def availability(key: str):
     if len(avrequests) > 1:
         return "More than one record found for request key", 500
     avrequest, = avrequests
+    req_group = avrequest["fields"]["Request_group"]
 
     if avrequest["fields"]["Responded"]:
         template = jinja_env.get_template("thanks.html")
@@ -38,7 +39,7 @@ def availability(key: str):
 
     timespans = CLIENT.get_records(
             "Request_timespans",
-            filter={"Request_group": [avrequest["fields"]["Request_group"]]})
+            filter={"Request_group": [req_group]})
 
     has_slots = False
     has_spans = False
@@ -89,12 +90,14 @@ def post_availability(key: str):
     cal_spans = cal_data["spans"]
 
     avrequest, = CLIENT.get_records("Availability_requests", filter={"Key": [key]})
+    req_group = avrequest["fields"]["Request_group"]
 
     CLIENT.patch_records("Availability_requests", [
         (avrequest["id"], {"Responded": True, "Response": request.form["response"]})
         ])
 
     CLIENT.add_records("Availability", [{
+            "Request_group": req_group,
             "Person": avrequest["fields"]["Person"],
             "Start": span["start"],
             "End": span["end"],
@@ -103,6 +106,7 @@ def post_availability(key: str):
         for span in cal_spans])
 
     CLIENT.add_records("Availability", [{
+            "Request_group": req_group,
             "Person": avrequest["fields"]["Person"],
             "Request_timespan": slot["rspan_id"],
             "Start": slot["start"],
