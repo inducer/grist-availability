@@ -55,3 +55,23 @@ from there.
 -   `Available`: (bool)
 -   `Request_timespan`: (reference to `Request_timespan`)
     Added if `Allow partial` is false for a given span.
+
+## UWSGI config for deployment
+
+```
+[uwsgi]
+plugins = python311
+socket = /tmp/uwsgi-grist-av.sock
+
+env = GRIST_ROOT_URL=https://grist.tiker.net
+env = GRIST_API_KEY_FILE=/home/grist-av/.grist-api-key
+env = GRIST_DOC_ID=rLJPGJ9RLJ4TRVx4AxT2tW
+
+chdir = /home/grist-av/grist-availability
+module=availability.app:app
+uid = grist-av
+gid = grist-av
+need-app = 1
+workers = 1
+virtualenv=/home/grist-av/grist-availability/.venv
+```
