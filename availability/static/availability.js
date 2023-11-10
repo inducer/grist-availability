@@ -5,12 +5,15 @@ function eventClick(info) {
       if (ev.extendedProps.available === null) {
         ev.setExtendedProp('available', true);
         ev.setProp('color', 'green');
+        ev.setProp('title', 'Available');
       } else if (ev.extendedProps.available) {
         ev.setExtendedProp('available', false);
         ev.setProp('color', 'red');
+        ev.setProp('title', 'Unavailable');
       } else if (!ev.extendedProps.available) {
         ev.setExtendedProp('available', null);
         ev.setProp('color', null);
+        ev.setProp('title', 'No Answer');
       }
     }
   } else if (ev.extendedProps.type === 'span') {

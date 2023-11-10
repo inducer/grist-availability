@@ -65,6 +65,7 @@ def availability(key: str):
             events.append({
                         "start": fields["Start"]*1000,
                         "end": fields["End"]*1000,
+                        "title": "No Answer",
                         "extendedProps": {
                             "type": "slot",
                             "available": None,
