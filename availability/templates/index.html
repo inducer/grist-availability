@@ -6,7 +6,8 @@
   <script>
     const events = {{ events | tojson }};
     const initialDate = {{ initial_date }};
-    initialize(initialDate, events, {{ has_spans | tojson }});
+    const nDays = {{ number_of_days }};
+    initialize(initialDate, nDays, events, {{ has_spans | tojson }});
   </script>
 {% endblock %}
 

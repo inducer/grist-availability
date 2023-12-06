@@ -71,13 +71,21 @@ function onSubmit() {
 }
 
 // eslint-disable-next-line no-unused-vars
-function initialize(initialDate, events, hasSpans) {
+function initialize(initialDate, nDays, events, hasSpans) {
   document.addEventListener(
     'DOMContentLoaded',
     () => {
       const calendarEl = document.getElementById('calendar');
       const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'timeGridWeek',
+        // plugins: [timeGridPlugin],
+        initialView: 'timeGridNDay',
+        views: {
+          timeGridNDay: {
+            type: 'timeGrid',
+            duration: { days: nDays }
+          }
+        },
+        dayHeaderFormat: { weekday: 'short', month: 'short', day: 'numeric', omitCommas: true },
         events,
         allDaySlot: false,
         initialDate,

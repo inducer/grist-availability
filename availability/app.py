@@ -23,6 +23,10 @@ GRIST_DOC_ID = os.environ["GRIST_DOC_ID"]
 CLIENT = GristClient(GRIST_ROOT_URL, GRIST_API_KEY, GRIST_DOC_ID)
 
 
+def div_ceil(nr, dr):
+    return -(-nr // dr)
+
+
 @app.get("/availability/<key>")
 def availability(key: str):
     avrequests = CLIENT.get_records("Availability_requests", filter={"Key": [key]})
@@ -45,6 +49,7 @@ def availability(key: str):
     has_spans = False
 
     initial_date = None
+    last_date = None
     events = []
     for tspan in timespans:
         fields = tspan["fields"]
@@ -52,6 +57,10 @@ def availability(key: str):
             initial_date = fields["Start"]*1000
         else:
             initial_date = min(initial_date, fields["Start"]*1000)
+        if last_date is None:
+            last_date = fields["End"]*1000
+        else:
+            last_date = max(last_date, fields["End"]*1000)
 
         if fields["Allow_partial"]:
             events.append({
@@ -74,11 +83,21 @@ def availability(key: str):
                         })
             has_slots = True
 
+    if timespans:
+        assert initial_date is not None
+        assert last_date is not None
+        print((last_date - initial_date)/(1000 * 3600 * 24))
+        number_of_days = div_ceil(
+            last_date - initial_date,
+            1000 * 3600 * 24)
+    else:
+        number_of_days = 1
     template = jinja_env.get_template("index.html")
     return template.render(
             avrequest=avrequest,
             events=events,
             initial_date=initial_date,
+            number_of_days=number_of_days,
             js_url=url_for("static", filename="availability.js"),
             has_slots=has_slots,
             has_spans=has_spans)
