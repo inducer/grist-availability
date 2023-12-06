@@ -86,7 +86,6 @@ def availability(key: str):
     if timespans:
         assert initial_date is not None
         assert last_date is not None
-        print((last_date - initial_date)/(1000 * 3600 * 24))
         number_of_days = div_ceil(
             last_date - initial_date,
             1000 * 3600 * 24)
