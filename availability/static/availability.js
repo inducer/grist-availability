@@ -36,24 +36,43 @@ function onSubmit() {
   const spans = [];
   let incomplete = false;
 
+  const request_spans = [];
   document.calendarInstance.getEvents().forEach((ev) => {
-    if (ev.extendedProps.type === 'slot') {
-      if (ev.extendedProps.available === null)
-        incomplete = ev.start;
-
-      slots.push({
-        rspan_id: ev.extendedProps.rspan_id,
-        start: ev.start,
-        end: ev.end,
-        available: ev.extendedProps.available,
-      });
-    } else if (ev.extendedProps.type === 'span') {
-      spans.push({
-        start: ev.start,
-        end: ev.end,
-      });
-    }
+    if (ev.display === 'background')
+      request_spans.push(ev);
   });
+
+  try {
+    document.calendarInstance.getEvents().forEach((ev) => {
+      if (ev.extendedProps.type === 'slot') {
+        if (ev.extendedProps.available === null)
+          incomplete = ev.start;
+
+        slots.push({
+          rspan_id: ev.extendedProps.rspan_id,
+          start: ev.start,
+          end: ev.end,
+          available: ev.extendedProps.available,
+        });
+      } else if (ev.extendedProps.type === 'span') {
+        if (!request_spans.some((rspan) => {
+          return ev.start >= rspan.start && ev.end <= rspan.end;
+        })) {
+          throw new Error('Some of your provided availability lies outside '
+            + 'the requested time spans. To avoid misunderstandings, '
+            + 'this is not allowed.');
+        }
+        spans.push({
+          start: ev.start,
+          end: ev.end,
+        });
+      }
+    });
+  }
+  catch (e) {
+    alert(e);
+    return;
+  }
 
   if (incomplete) {
     alert('Please make sure to indicate your availability (yes/no) for all '
