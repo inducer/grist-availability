@@ -31,8 +31,8 @@ from there.
     calendar.
 -   `Message`: (text) A message shown to the user on their
     personalized calendar.
--   `Responded`: (bool, output) To record whether the user has responded to
-    this request.
+-   `Responded`: (datetime, output) To record whether (and when) the user has
+    responded to this request.
 -   `Response`: (text, output) To record the user\'s textual response.
 
 `Request_timespans` needs columns:

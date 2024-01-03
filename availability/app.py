@@ -4,6 +4,7 @@ import os
 from flask import Flask, request, url_for
 from jinja2 import Environment, PackageLoader, select_autoescape
 from pygrist_mini import GristClient
+from time import time
 
 
 app = Flask(__name__)
@@ -112,8 +113,11 @@ def post_availability(key: str):
     req_group = avrequest["fields"]["Request_group"]
 
     CLIENT.patch_records("Availability_requests", [
-        (avrequest["id"], {"Responded": True, "Response": request.form["response"]})
-        ])
+        (avrequest["id"], {
+            "Responded": time(),
+            "Response": request.form["response"],
+        })
+    ])
 
     CLIENT.add_records("Availability", [{
             "Request_group": req_group,
