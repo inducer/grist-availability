@@ -79,6 +79,11 @@ function initialize(initialDate, nDays, events, hasSpans) {
       const calendar = new FullCalendar.Calendar(calendarEl, {
         // plugins: [timeGridPlugin],
         initialView: 'timeGridNDay',
+        headerToolbar: {
+          start: false,
+          center: false,
+          end: false,
+        },
         views: {
           timeGridNDay: {
             type: 'timeGrid',
