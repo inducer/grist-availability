@@ -158,7 +158,7 @@ def post_availability(key: str):
 
         summary = (
                 f'{avrequest["fields"]["Name"]} has responded for '
-                f"request group {avrequest["fields"]["Request_group"]}"
+                f'request group {avrequest["fields"]["Request_group"]}'
         )
         notification_template = jinja_env.get_template("notification-email.txt")
         msg = EmailMessage()
