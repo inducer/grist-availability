@@ -29,6 +29,8 @@ from there.
     it need not be.
 -   `Key`: (text) Used as part of the link to the personalized
     calendar.
+-   `Name`: (text) Name of the person or entity whose availability
+    is being requested.
 -   `Message`: (text) A message shown to the user on their
     personalized calendar.
 -   `Responded`: (datetime, output) To record whether (and when) the user has
