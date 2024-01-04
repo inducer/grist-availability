@@ -71,6 +71,10 @@ env = GRIST_ROOT_URL=https://grist.tiker.net
 env = GRIST_API_KEY_FILE=/home/grist-av/.grist-api-key
 env = GRIST_DOC_ID=rLJPGJ9RLJ4TRVx4AxT2tW
 
+# Optional. Only effective if both are provided.
+env = NOTIFY_FROM=andreask@illinois.edu
+env = NOTIFY_TO=andreask@illinois.edu
+
 chdir = /home/grist-av/grist-availability
 module=availability.app:app
 uid = grist-av

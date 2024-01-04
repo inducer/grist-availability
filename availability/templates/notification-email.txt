@@ -1,0 +1,22 @@
+Dear notification recipient,
+
+{{summary}}.
+{% if span_duration %}
+They provided {{ span_duration // 3600 }} hours of availability.
+{% endif %}
+{% if slot_count %}
+They provided {{ slot_counts }} available time slots.
+{% endif %}
+{% if not span_duration and not slot_count %}
+They provided no availability whatsoever.
+{% endif %}
+
+{% if text_response %}
+They provided the following textual response:
+-------------------------------------------------------------
+{{text_response}}
+-------------------------------------------------------------
+{% endif %}
+
+Sincerely,
+Grist-availability, running on {{ hostname }}

@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 from time import time
@@ -19,6 +20,8 @@ GRIST_ROOT_URL = os.environ["GRIST_ROOT_URL"]
 with open(os.environ["GRIST_API_KEY_FILE"], "r") as inf:
     GRIST_API_KEY = inf.read().strip()
 GRIST_DOC_ID = os.environ["GRIST_DOC_ID"]
+NOTIFY_FROM = os.environ.get("NOTIFY_FROM")
+NOTIFY_TO = os.environ.get("NOTIFY_TO")
 
 
 CLIENT = GristClient(GRIST_ROOT_URL, GRIST_API_KEY, GRIST_DOC_ID)
@@ -112,10 +115,11 @@ def post_availability(key: str):
     avrequest, = CLIENT.get_records("Availability_requests", filter={"Key": [key]})
     req_group = avrequest["fields"]["Request_group"]
 
+    text_response = request.form["response"]
     CLIENT.patch_records("Availability_requests", [
         (avrequest["id"], {
             "Responded": time(),
-            "Response": request.form["response"],
+            "Response": text_response,
         })
     ])
 
@@ -128,6 +132,11 @@ def post_availability(key: str):
             }
         for span in cal_spans])
 
+    span_duration = sum(
+        (datetime.datetime.fromisoformat(span["end"])
+            - datetime.datetime.fromisoformat(span["start"])).total_seconds()
+        for span in cal_spans)
+
     CLIENT.add_records("Availability", [{
             "Request_group": req_group,
             "Person": avrequest["fields"]["Person"],
@@ -138,8 +147,41 @@ def post_availability(key: str):
             }
         for slot in cal_slots])
 
-    template = jinja_env.get_template("thanks.html")
-    return template.render()
+    slot_count = sum(1 for slot in cal_slots if slot["available"])
+
+    # {{{ notification email
+
+    if NOTIFY_TO is not None and NOTIFY_FROM is not None:
+        import smtplib
+        import socket
+        from email.message import EmailMessage
+
+        summary = (
+                f'{avrequest["fields"]["Name"]} has responded for '
+                f"request group {avrequest["fields"]["Request_group"]}"
+        )
+        notification_template = jinja_env.get_template("notification-email.txt")
+        msg = EmailMessage()
+        msg.set_content(notification_template.render(
+                        summary=summary,
+                        span_duration=span_duration,
+                        slot_count=slot_count,
+                        text_response=text_response,
+                        hostname=socket.gethostname()))
+
+        msg["Subject"] = f"[grist-av] {summary}"
+
+        msg["From"] = NOTIFY_FROM
+        msg["To"] = NOTIFY_TO
+
+        s = smtplib.SMTP("localhost")
+        s.send_message(msg)
+        s.quit()
+
+    # }}}
+
+    thanks_template = jinja_env.get_template("thanks.html")
+    return thanks_template.render()
 
 
 # vim: foldmethod=marker
