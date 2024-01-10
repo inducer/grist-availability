@@ -31,6 +31,8 @@ from there.
     calendar.
 -   `Name`: (text) Name of the person or entity whose availability
     is being requested.
+-   `Allow_maybe`: (bool) Whether timespans may be marked as 'If I must'.
+    (optional)
 -   `Message`: (text) A message shown to the user on their
     personalized calendar.
 -   `Responded`: (datetime, output) To record whether (and when) the user has
@@ -57,6 +59,7 @@ from there.
 -   `Start`: (datetime)
 -   `End`: (datetime)
 -   `Available`: (bool)
+-   `Maybe`: (bool) (only used if `Allow_maybe` is present and truthy)
 -   `Request_timespan`: (reference to `Request_timespan`)
     Added if `Allow partial` is false for a given span.
 

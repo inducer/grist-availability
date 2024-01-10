@@ -5,6 +5,7 @@
   <script src='{{ js_url }}'></script>
   <script>
     const events = {{ events | tojson }};
+    const allow_maybe = {{ allow_maybe | tojson }};
     const initialDate = {{ initial_date }};
     const nDays = {{ number_of_days }};
     initialize(initialDate, nDays, events, {{ has_spans | tojson }});
@@ -19,7 +20,13 @@
     {% endif %}
     {% if has_spans %}
       <li>For the time spans shown in green, please drag your mouse to indicate
-        your available times. Edit by dragging. Shift-click to delete.</li>
+        your available times. Edit by dragging. Shift-click to delete.
+        {% if allow_maybe  %}
+          <ul><li>Click on your drawn time ranges to toggle them between "Available"
+            and "If I must".
+          </li></ul>
+        {% endif %}
+      </li>
     {% endif %}
     {% if has_slots %}
       <li>For time slots shown in blue, please click to indicate your availability

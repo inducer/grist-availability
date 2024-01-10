@@ -1,33 +1,48 @@
 function eventClick(info) {
   const ev = info.event;
-  if (!info.jsEvent.shiftKey) {
-    if (ev.extendedProps.type === 'slot') {
-      if (ev.extendedProps.available === null) {
-        ev.setExtendedProp('available', true);
-        ev.setProp('color', 'green');
-        ev.setProp('title', 'Available');
-      } else if (ev.extendedProps.available) {
-        ev.setExtendedProp('available', false);
-        ev.setProp('color', 'red');
-        ev.setProp('title', 'Unavailable');
-      } else if (!ev.extendedProps.available) {
-        ev.setExtendedProp('available', null);
-        ev.setProp('color', null);
-        ev.setProp('title', 'No Answer');
+  if (ev.extendedProps.type === 'slot' && !info.jsEvent.shiftKey) {
+    if (ev.extendedProps.available === null) {
+      ev.setExtendedProp('available', true);
+      ev.setProp('color', 'limegreen');
+      ev.setProp('title', 'Available');
+    } else if (ev.extendedProps.available) {
+      ev.setExtendedProp('available', false);
+      ev.setProp('color', 'red');
+      ev.setProp('title', 'Unavailable');
+    } else if (!ev.extendedProps.available) {
+      ev.setExtendedProp('available', null);
+      ev.setProp('color', null);
+      ev.setProp('title', 'No Answer');
+    }
+  }
+  if (ev.extendedProps.type === 'span') {
+    if (info.jsEvent.shiftKey)
+      ev.remove();
+    else {
+      if (allow_maybe) {
+        const maybe = !ev.extendedProps.maybe;
+        ev.setExtendedProp('maybe', maybe);
+        if (maybe) {
+          ev.setProp('color', 'orange');
+          ev.setProp('title', 'If I must');
+        }
+        else {
+          ev.setProp('color', 'green');
+          ev.setProp('title', 'Available');
+        }
       }
     }
-  } else if (ev.extendedProps.type === 'span') {
-    ev.remove();
   }
 }
 
 function calSelect(info) {
   info.view.calendar.addEvent({
-    start: info.start,
-    end: info.end,
-    editable: true,
-    color: 'orange',
-    extendedProps: { type: 'span' },
+      start: info.start,
+      end: info.end,
+      title: 'Available',
+      editable: true,
+      color: 'green',
+      extendedProps: { type: 'span', maybe: false },
   });
 }
 
@@ -65,6 +80,7 @@ function onSubmit() {
         spans.push({
           start: ev.start,
           end: ev.end,
+          maybe: ev.extendedProps.maybe,
         });
       }
     });

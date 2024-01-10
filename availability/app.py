@@ -104,6 +104,7 @@ def availability(key: str):
             number_of_days=number_of_days,
             js_url=url_for("static", filename="availability.js"),
             has_slots=has_slots,
+            allow_maybe=bool(avrequest["fields"].get("Allow_maybe")),
             has_spans=has_spans)
 
 
@@ -117,6 +118,8 @@ def post_availability(key: str):
 
     avrequest, = CLIENT.get_records("Availability_requests", filter={"Key": [key]})
     req_group = avrequest["fields"]["Request_group"]
+
+    allow_maybe = avrequest["fields"].get("Allow_maybe")
 
     if avrequest["fields"]["Responded"] is not None:
         return msg_template.render(
@@ -137,7 +140,7 @@ def post_availability(key: str):
             "Start": span["start"],
             "End": span["end"],
             "Available": True,
-            }
+            } | ({"Maybe": span["maybe"]} if allow_maybe else {})
         for span in cal_spans])
 
     span_duration = sum(
