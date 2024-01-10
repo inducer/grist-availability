@@ -42,8 +42,9 @@ def availability(key: str):
     req_group = avrequest["fields"]["Request_group"]
 
     if avrequest["fields"]["Responded"]:
-        template = jinja_env.get_template("thanks.html")
-        return template.render()
+        msg_template = jinja_env.get_template("message.html")
+        return msg_template.render(
+            {"message": "Thank you for submitting your availability!"})
 
     timespans = CLIENT.get_records(
             "Request_timespans",
@@ -112,8 +113,15 @@ def post_availability(key: str):
     cal_slots = cal_data["slots"]
     cal_spans = cal_data["spans"]
 
+    msg_template = jinja_env.get_template("message.html")
+
     avrequest, = CLIENT.get_records("Availability_requests", filter={"Key": [key]})
     req_group = avrequest["fields"]["Request_group"]
+
+    if avrequest["fields"]["Responded"] is not None:
+        return msg_template.render(
+            {"message": "Your availability has previously been submitted. "
+             "The present response has not been recorded."})
 
     text_response = request.form["response"]
     CLIENT.patch_records("Availability_requests", [
@@ -180,8 +188,8 @@ def post_availability(key: str):
 
     # }}}
 
-    thanks_template = jinja_env.get_template("thanks.html")
-    return thanks_template.render()
+    return msg_template.render(
+        {"message": "Thank you for submitting your availability!"})
 
 
 # vim: foldmethod=marker
