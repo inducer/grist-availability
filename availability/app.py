@@ -105,6 +105,7 @@ def availability(key: str):
             js_url=url_for("static", filename="availability.js"),
             has_slots=has_slots,
             allow_maybe=bool(avrequest["fields"].get("Allow_maybe")),
+            minimum_minutes=avrequest["fields"].get("Minimum_minutes"),
             has_spans=has_spans)
 
 

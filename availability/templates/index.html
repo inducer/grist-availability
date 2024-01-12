@@ -8,6 +8,7 @@
     const allow_maybe = {{ allow_maybe | tojson }};
     const initialDate = {{ initial_date }};
     const nDays = {{ number_of_days }};
+    const minimumMinutes = {{ minimum_minutes | tojson }};
     initialize(initialDate, nDays, events, {{ has_spans | tojson }});
   </script>
 {% endblock %}

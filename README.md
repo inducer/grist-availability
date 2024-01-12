@@ -34,6 +34,8 @@ from there.
 -   `Allow_maybe`: (bool, optional) Whether timespans may be marked as 'If I must'.
 -   `Message`: (text) A message shown to the user on their
     personalized calendar.
+-   `Minimum minutes`: (number, optional) The minimum number of minutes required
+    in each time span supplied by a respondent.
 -   `Responded`: (datetime, output) To record whether (and when) the user has
     responded to this request.
 -   `Response`: (text, output) To record the user's textual response.

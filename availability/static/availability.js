@@ -49,7 +49,6 @@ function calSelect(info) {
 function onSubmit() {
   const slots = [];
   const spans = [];
-  let incomplete = false;
 
   const request_spans = [];
   document.calendarInstance.getEvents().forEach((ev) => {
@@ -61,7 +60,10 @@ function onSubmit() {
     document.calendarInstance.getEvents().forEach((ev) => {
       if (ev.extendedProps.type === 'slot') {
         if (ev.extendedProps.available === null)
-          incomplete = ev.start;
+          throw Error(
+            'Please make sure to indicate your availability (yes/no) for all '
+            + 'time slots shown in blue, by clicking them. '
+            + `Incomplete slot: ${ev.start}.`);
 
         slots.push({
           rspan_id: ev.extendedProps.rspan_id,
@@ -70,6 +72,9 @@ function onSubmit() {
           available: ev.extendedProps.available,
         });
       } else if (ev.extendedProps.type === 'span') {
+
+        // {{{ check that span is within request
+
         if (!request_spans.some((rspan) => {
           return ev.start >= rspan.start && ev.end <= rspan.end;
         })) {
@@ -77,6 +82,17 @@ function onSubmit() {
             + 'the requested time spans. To avoid misunderstandings, '
             + 'this is not allowed.');
         }
+
+        // }}}
+
+        console.log((ev.end - ev.start) / (1000 * 60))
+        if (minimumMinutes
+          && (ev.end - ev.start) / (1000 * 60) < minimumMinutes) {
+          throw new Error("The minimal duration for an available time span is "
+            + `${minimumMinutes} minutes. One of your submitted time spans is `
+            + "shorter than this minimal duration.");
+        }
+
         spans.push({
           start: ev.start,
           end: ev.end,
@@ -86,14 +102,7 @@ function onSubmit() {
     });
   }
   catch (e) {
-    alert(e);
-    return;
-  }
-
-  if (incomplete) {
-    alert('Please make sure to indicate your availability (yes/no) for all '
-      + 'time slots shown in blue, by clicking them. '
-      + `Incomplete slot: ${incomplete}`);
+    alert(e + " Please adjust your submission and try again.");
     return;
   }
 
@@ -140,3 +149,5 @@ function initialize(initialDate, nDays, events, hasSpans) {
     },
   );
 }
+
+// vim: foldmethod=marker
