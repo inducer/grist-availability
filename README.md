@@ -31,13 +31,12 @@ from there.
     calendar.
 -   `Name`: (text) Name of the person or entity whose availability
     is being requested.
--   `Allow_maybe`: (bool) Whether timespans may be marked as 'If I must'.
-    (optional)
+-   `Allow_maybe`: (bool, optional) Whether timespans may be marked as 'If I must'.
 -   `Message`: (text) A message shown to the user on their
     personalized calendar.
 -   `Responded`: (datetime, output) To record whether (and when) the user has
     responded to this request.
--   `Response`: (text, output) To record the user\'s textual response.
+-   `Response`: (text, output) To record the user's textual response.
 
 `Request_timespans` needs columns:
 
