@@ -5,51 +5,55 @@
   <script src='{{ js_url }}'></script>
   <script>
     const events = {{ events | tojson }};
-    const allow_maybe = {{ allow_maybe | tojson }};
+    const allowMaybe = {{ allow_maybe | tojson }};
     const initialDate = {{ initial_date }};
     const nDays = {{ number_of_days }};
-    const minimumMinutes = {{ minimum_minutes | tojson }};
     initialize(initialDate, nDays, events, {{ has_spans | tojson }});
   </script>
 {% endblock %}
 
 {% block content %}
-<h1>Availability Poll for {{ avrequest["fields"]["Name"] }}</h1>
-  <ul>
-    {% if avrequest["fields"]["Message"] %}
-      <li><b>{{ avrequest["fields"]["Message"] }}</b></li>
-    {% endif %}
-    {% if has_spans %}
-      <li>For the time spans shown in green, please drag your mouse to indicate
-        your available times. Edit by dragging. Shift-click to delete.
-        <b>Please indicate your entire available time, <em>not</em> the
-          possible start times.</b>
-        {% if allow_maybe  %}
-          <ul><li>Click on your drawn time ranges to toggle them between "Available"
-            and "If I must".
-          </li></ul>
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Instructions</h5>
+      <ul>
+        {% if av_request.message %}
+        <li><b>{{ av_request.message }}</b></li>
         {% endif %}
-      </li>
-    {% endif %}
-    {% if has_slots %}
-      <li>For time slots shown in blue, please click to indicate your availability
-        (green) or unavailability (red).</li>
-    {% endif %}
-    <li>If using this on a <b>touch device</b>: 
-      To create a time range: hold on a time until a highlight appears, then drag.
-      To edit a time range: hold on that time range until selected, then drag
-      to move. When selected, drag the bottom handle to change duration.
-    </li>
-    <li>When done, please press <b>submit</b> below.</li>
-  </ul>
+        {% if has_spans %}
+        <li>For the time spans shown in green, please drag your mouse to indicate
+          your available times. Edit by dragging. Shift-click to delete.
+          <b>Please indicate your entire available time, <em>not</em> the
+            possible start times.</b>
+          {% if allow_maybe  %}
+          <ul><li>Click on your drawn time ranges to toggle them between "Available"
+              and "If I must".
+            </li></ul>
+            {% endif %}
+        </li>
+        {% endif %}
+        {% if has_slots %}
+        <li>For time slots shown in blue, please click to indicate your availability
+          (green) or unavailability (red).</li>
+        {% endif %}
+        <li>If using this on a <b>touch device</b>: 
+          To create a time range: hold on a time until a highlight appears, then drag.
+          To edit a time range: hold on that time range until selected, then drag
+          to move. When selected, drag the bottom handle to change duration.
+        </li>
+        <li>When done, please press <b>submit</b> below.</li>
+      </ul>
+    </div>
+  </div>
+  <h5 class="mt-3">Poll for {{ av_request.name }}</h5>
   <div id='calendar'></div>
   <form id="calendarForm" method="POST" class="mt-3">
     <div class="form-floating mb-3">
       <textarea class="form-control"  id="response" name="response" placeholder="..."
-        >{{ avrequest["fields"]["response"] }}</textarea>
+        >{{ av_request.response }}</textarea>
       <label for="response">Comments / Response to questions (see help text)</label>
-      {% if avrequest["fields"]["Message"] %}
-        <div class="form-text">{{ avrequest["fields"]["Message"] }}</div>
+      {% if av_request.message %}
+        <div class="form-text">{{ av_request.message }}</div>
       {% endif %}
     </div>
     <input type="hidden" id="calendarState" name="calendarState"></input>

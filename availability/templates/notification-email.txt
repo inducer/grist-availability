@@ -5,7 +5,7 @@ Dear notification recipient,
 They provided {{ span_duration // 3600 }} hours of availability.
 {% endif %}
 {% if slot_count %}
-They provided {{ slot_counts }} available time slots.
+They provided {{ slot_count }} available time slots.
 {% endif %}
 {% if not span_duration and not slot_count %}
 They provided no availability whatsoever.

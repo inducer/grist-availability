@@ -1,116 +1,85 @@
+function styleEvent(ev) {
+  if (ev.extendedProps.type === 'slot') {
+    if (ev.extendedProps.available === true) {
+      ev.setProp('color', 'limegreen');
+      ev.setProp('title', 'Available');
+    } else if (ev.extendedProps.available === false) {
+      ev.setProp('color', 'red');
+      ev.setProp('title', 'Unavailable');
+    } else if (ev.extendedProps.available === null) {
+      ev.setProp('color', null);
+      ev.setProp('title', 'No Answer');
+    }
+  } else if (ev.extendedProps.type === 'span') {
+    if (ev.extendedProps.maybe) {
+      ev.setProp('color', 'orange');
+      ev.setProp('title', 'If I must');
+    } else {
+      ev.setProp('color', 'green');
+      ev.setProp('title', 'Available');
+    }
+  }
+}
+
 function eventClick(info) {
   const ev = info.event;
   if (ev.extendedProps.type === 'slot' && !info.jsEvent.shiftKey) {
     if (ev.extendedProps.available === null) {
       ev.setExtendedProp('available', true);
-      ev.setProp('color', 'limegreen');
-      ev.setProp('title', 'Available');
     } else if (ev.extendedProps.available) {
       ev.setExtendedProp('available', false);
-      ev.setProp('color', 'red');
-      ev.setProp('title', 'Unavailable');
     } else if (!ev.extendedProps.available) {
       ev.setExtendedProp('available', null);
-      ev.setProp('color', null);
-      ev.setProp('title', 'No Answer');
     }
   }
   if (ev.extendedProps.type === 'span') {
-    if (info.jsEvent.shiftKey)
+    if (info.jsEvent.shiftKey) {
       ev.remove();
-    else {
-      if (allow_maybe) {
-        const maybe = !ev.extendedProps.maybe;
-        ev.setExtendedProp('maybe', maybe);
-        if (maybe) {
-          ev.setProp('color', 'orange');
-          ev.setProp('title', 'If I must');
-        }
-        else {
-          ev.setProp('color', 'green');
-          ev.setProp('title', 'Available');
-        }
-      }
+    // eslint-disable-next-line no-undef
+    } else if (allowMaybe) {
+      ev.setExtendedProp('maybe', !ev.extendedProps.maybe);
     }
   }
+  styleEvent(ev);
 }
 
 function calSelect(info) {
-  info.view.calendar.addEvent({
-      start: info.start,
-      end: info.end,
-      title: 'Available',
-      editable: true,
-      color: 'green',
-      extendedProps: { type: 'span', maybe: false },
+  const ev = info.view.calendar.addEvent({
+    start: info.start,
+    end: info.end,
+    editable: true,
+    extendedProps: { type: 'span', maybe: false },
   });
+  styleEvent(ev);
 }
 
 function onSubmit() {
   const slots = [];
   const spans = [];
 
-  const request_spans = [];
   document.calendarInstance.getEvents().forEach((ev) => {
-    if (ev.display === 'background')
-      request_spans.push(ev);
+    if (ev.extendedProps.type === 'slot') {
+      slots.push({
+        rspan_id: ev.extendedProps.rspan_id,
+        start: ev.start,
+        end: ev.end,
+        available: ev.extendedProps.available,
+      });
+    } else if (ev.extendedProps.type === 'span') {
+      spans.push({
+        start: ev.start,
+        end: ev.end,
+        maybe: ev.extendedProps.maybe,
+      });
+    }
   });
-
-  try {
-    document.calendarInstance.getEvents().forEach((ev) => {
-      if (ev.extendedProps.type === 'slot') {
-        if (ev.extendedProps.available === null)
-          throw Error(
-            'Please make sure to indicate your availability (yes/no) for all '
-            + 'time slots shown in blue, by clicking them. '
-            + `Incomplete slot: ${ev.start}.`);
-
-        slots.push({
-          rspan_id: ev.extendedProps.rspan_id,
-          start: ev.start,
-          end: ev.end,
-          available: ev.extendedProps.available,
-        });
-      } else if (ev.extendedProps.type === 'span') {
-
-        // {{{ check that span is within request
-
-        if (!request_spans.some((rspan) => {
-          return ev.start >= rspan.start && ev.end <= rspan.end;
-        })) {
-          throw new Error('Some of your provided availability lies outside '
-            + 'the requested time spans. To avoid misunderstandings, '
-            + 'this is not allowed.');
-        }
-
-        // }}}
-
-        console.log((ev.end - ev.start) / (1000 * 60))
-        if (minimumMinutes
-          && (ev.end - ev.start) / (1000 * 60) < minimumMinutes) {
-          throw new Error("The minimal duration for an available time span is "
-            + `${minimumMinutes} minutes. One of your submitted time spans is `
-            + "shorter than this minimal duration.");
-        }
-
-        spans.push({
-          start: ev.start,
-          end: ev.end,
-          maybe: ev.extendedProps.maybe,
-        });
-      }
-    });
-  }
-  catch (e) {
-    alert(e + " Please adjust your submission and try again.");
-    return;
-  }
 
   document.getElementById('calendarState').value = JSON.stringify({
     slots,
     spans,
   });
 
+  document.getElementById('submitButton').classList.add('disabled');
   document.getElementById('calendarForm').submit();
 }
 
@@ -120,6 +89,7 @@ function initialize(initialDate, nDays, events, hasSpans) {
     'DOMContentLoaded',
     () => {
       const calendarEl = document.getElementById('calendar');
+      // eslint-disable-next-line no-undef
       const calendar = new FullCalendar.Calendar(calendarEl, {
         // plugins: [timeGridPlugin],
         initialView: 'timeGridNDay',
@@ -131,10 +101,15 @@ function initialize(initialDate, nDays, events, hasSpans) {
         views: {
           timeGridNDay: {
             type: 'timeGrid',
-            duration: { days: nDays }
-          }
+            duration: { days: nDays },
+          },
         },
-        dayHeaderFormat: { weekday: 'short', month: 'short', day: 'numeric', omitCommas: true },
+        dayHeaderFormat: {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          omitCommas: true,
+        },
         events,
         allDaySlot: false,
         initialDate,
@@ -142,6 +117,7 @@ function initialize(initialDate, nDays, events, hasSpans) {
         selectable: hasSpans,
         select: calSelect,
       });
+      calendar.getEvents().forEach(styleEvent);
       calendar.render();
 
       document.calendarInstance = calendar;

@@ -29,24 +29,25 @@ from there.
     it need not be.
 -   `Key`: (text) Used as part of the link to the personalized
     calendar.
+-   `Person`: (any) Identifier of person to whom the request is addressed.
+    Copied verbatim into `Availability`.
 -   `Name`: (text) Name of the person or entity whose availability
     is being requested.
 -   `Allow_maybe`: (bool, optional) Whether timespans may be marked as 'If I must'.
 -   `Message`: (text) A message shown to the user on their
     personalized calendar.
--   `Minimum minutes`: (number, optional) The minimum number of minutes required
+-   `Min_span_minutes`: (number, optional) The minimum number of minutes required
     in each time span supplied by a respondent.
--   `Responded`: (datetime, output) To record whether (and when) the user has
-    responded to this request.
+-   `Responded`: (unix timestamp, input/output) To record whether (and when)
+    the user has responded to this request.
 -   `Response`: (text, output) To record the user's textual response.
 
 `Request_timespans` needs columns:
 
 -   `Request_group`: (int/any) Identifier of the group of requests, matches
     `Availability_requests.Request_group`.
--   `Request`: (reference to `Availability_requests`)
--   `Start`: (datetime)
--   `End`: (datetime)
+-   `Start`: (unix timestamp)
+-   `End`: (unix timestamp)
 -   `Allow partial`: (bool) If yes, will draw a timespan in the background,
     allowing the user to draw their availability over it. If no, only allows
     the user to say yes/no to each timespan.
@@ -57,8 +58,9 @@ from there.
 
 -   `Request_group`: (int/any) Identifier of the group of requests, matches
     `Availability_requests.Request_group`.
--   `Start`: (datetime)
--   `End`: (datetime)
+-   `Person`: (any)
+-   `Start`: (unix timestamp)
+-   `End`: (unix timestamp)
 -   `Available`: (bool)
 -   `Maybe`: (bool) (only used if `Allow_maybe` is present and truthy)
 -   `Request_timespan`: (reference to `Request_timespan`)
@@ -74,6 +76,7 @@ socket = /tmp/uwsgi-grist-av.sock
 env = GRIST_ROOT_URL=https://grist.tiker.net
 env = GRIST_API_KEY_FILE=/home/grist-av/.grist-api-key
 env = GRIST_DOC_ID=rLJPGJ9RLJ4TRVx4AxT2tW
+env = SECRET_KEY=CHANGE_ME
 
 # Optional. Only effective if both are provided.
 env = NOTIFY_FROM=andreask@illinois.edu
