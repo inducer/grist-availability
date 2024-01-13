@@ -20,6 +20,8 @@ jobs:
             run: |
                 pip install flake8 flake8-quotes flake8-bugbear flake8-isort
                 flake8 availability
+                pip install mypy
+                mypy availability
 
     eslint:
         runs-on: ubuntu-latest
