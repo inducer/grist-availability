@@ -311,8 +311,8 @@ def send_notify(av_request: AvailabilityRequest, text_response: str,
     from email.message import EmailMessage
 
     summary = (
-            f'{av_request.name} has responded for '
-            f'request group {av_request.request_group}'
+            f"{av_request.name} has responded for "
+            f"request group {av_request.request_group}"
     )
     notification_template = JINJA_ENV.get_template("notification-email.txt")
     msg = EmailMessage()
