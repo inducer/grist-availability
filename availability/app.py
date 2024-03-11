@@ -325,6 +325,7 @@ def send_notify(av_request: AvailabilityRequest, text_response: str,
 
     msg["Subject"] = f"[grist-av] {summary}"
 
+    assert NOTIFY_FROM and NOTIFY_TO
     msg["From"] = NOTIFY_FROM
     msg["To"] = NOTIFY_TO
 
