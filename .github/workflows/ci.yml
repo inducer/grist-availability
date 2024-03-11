@@ -8,7 +8,7 @@ on:
         - cron:  '17 3 * * 0'
 
 jobs:
-    flake8:
+    python-lint:
         runs-on: ubuntu-latest
         steps:
         -   uses: actions/checkout@v4
