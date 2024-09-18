@@ -434,7 +434,7 @@ def availabilit(key: str):
 
         # }}}
 
-        return respond_with_message("Thank you for submitting your availability!")
+        return respond_with_message("Thank you for submitting your availability.")
 
 
 # vim: foldmethod=marker
