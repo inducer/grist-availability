@@ -6,8 +6,14 @@ import json
 import os
 from time import time
 from typing import (
-    Any, Callable, Dict, Hashable, Mapping, Optional, Sequence, Type, TypeVar, Union, cast, get_args,
-    get_origin)
+    Any,
+    Callable,
+    Hashable,
+    Mapping,
+    Sequence,
+    TypeVar,
+    cast,
+)
 
 from flask import Flask, Response, flash, request, url_for
 from jinja2 import Environment, PackageLoader, StrictUndefined, select_autoescape
@@ -24,7 +30,7 @@ JINJA_ENV = Environment(
 
 
 GRIST_ROOT_URL = os.environ["GRIST_ROOT_URL"]
-with open(os.environ["GRIST_API_KEY_FILE"], "r") as inf:
+with open(os.environ["GRIST_API_KEY_FILE"]) as inf:
     GRIST_API_KEY = inf.read().strip()
 GRIST_DOC_ID = os.environ["GRIST_DOC_ID"]
 NOTIFY_FROM = os.environ.get("NOTIFY_FROM")
@@ -115,7 +121,7 @@ def cast_datetime(x: str | int) -> datetime.datetime:
         return AssertionError()
 
 
-NAME_TO_CASTER: Mapping[str, Callable[[Any], Any] ]= {
+NAME_TO_CASTER: Mapping[str, Callable[[Any], Any]] = {
     "Any": lambda x: x,
     "Hashable": lambda x: x,
     "int": int,
@@ -150,18 +156,16 @@ def type_str_to_caster(t: str) -> Callable[[Any], Any]:
         return caster
 
 
-def json_to_dataclass(kv: Dict[str, Any], dataclass_type: Type[T]) -> T:
+def json_to_dataclass(kv: dict[str, Any], dataclass_type: type[T]) -> T:
     assert dataclasses.is_dataclass(dataclass_type)
 
-    for f in dataclasses.fields(dataclass_type):
-        type_str_to_caster(f.type)(kv[f.name])
     return cast(T, dataclass_type(**{
-        f.name: type_str_to_caster(f.type)(kv[f.name])
+        f.name: type_str_to_caster(cast(str, f.type))(kv[f.name])
         for f in dataclasses.fields(dataclass_type)
     }))
 
 
-def grist_json_to_dataclass(kv: Dict[str, Any], dataclass_type: Type[T]) -> T:
+def grist_json_to_dataclass(kv: dict[str, Any], dataclass_type: type[T]) -> T:
     fields = {n.lower(): v for n, v in kv["fields"].items()}
     fields["id"] = kv["id"]
     return json_to_dataclass(fields, dataclass_type)
@@ -171,7 +175,7 @@ def grist_json_to_dataclass(kv: Dict[str, Any], dataclass_type: Type[T]) -> T:
 
 # {{{ normalization/validation
 
-def check_start_after_end(ss: Sequence[Union[TimeSpan, TimeSlot]]):
+def check_start_after_end(ss: Sequence[TimeSpan | TimeSlot]):
     for s in ss:
         if not s.start < s.end:
             raise ValidationError("start must come before end")
@@ -195,7 +199,7 @@ def merge_adjacent_spans(spans: Sequence[TimeSpan]) -> Sequence[TimeSpan]:
 def check_nonoverlapping(spans: Sequence[TimeSpan]) -> None:
     # assumes spans are sorted
 
-    last_end: Optional[datetime.datetime] = None
+    last_end: datetime.datetime | None = None
     for s in spans:
         if last_end is not None:
             if last_end > s.start:
@@ -264,8 +268,8 @@ def get_flashed_messages():
 def render_calendar(
         av_request: AvailabilityRequest,
         req_timespans: Sequence[RequestTimespan],
-        spans: Optional[Sequence[TimeSpan]] = None,
-        slots: Optional[Sequence[TimeSlot]] = None):
+        spans: Sequence[TimeSpan] | None = None,
+        slots: Sequence[TimeSlot] | None = None):
     if spans is None:
         spans = []
     if slots is None:
@@ -282,27 +286,27 @@ def render_calendar(
 
     for rtspan in req_timespans:
         if initial_date is None:
-            initial_date = rtspan.start*1000
+            initial_date = rtspan.start * 1000
         else:
-            initial_date = min(initial_date, rtspan.start*1000)
+            initial_date = min(initial_date, rtspan.start * 1000)
         if last_date is None:
-            last_date = rtspan.end*1000
+            last_date = rtspan.end * 1000
         else:
-            last_date = max(last_date, rtspan.end*1000)
+            last_date = max(last_date, rtspan.end * 1000)
 
         if rtspan.allow_partial:
             events.append({
                         "id": rtspan.id,
-                        "start": rtspan.start*1000,
-                        "end": rtspan.end*1000,
+                        "start": rtspan.start * 1000,
+                        "end": rtspan.end * 1000,
                         "display": "background",
                         })
             has_spans = True
         else:
             old_slot = id_to_slot.get(rtspan.id)
             events.append({
-                        "start": rtspan.start*1000,
-                        "end": rtspan.end*1000,
+                        "start": rtspan.start * 1000,
+                        "end": rtspan.end * 1000,
                         "extendedProps": {
                             "type": "slot",
                             "available": old_slot.available if old_slot else None,
@@ -375,7 +379,7 @@ def send_notify(av_request: AvailabilityRequest, text_response: str,
     s.quit()
 
 
-def respond_with_message(msg: str, category="message", status: Optional[int] = None):
+def respond_with_message(msg: str, category="message", status: int | None = None):
     flash(msg, category)
     resp_text = (JINJA_ENV
             .get_template("base.html")
@@ -405,7 +409,7 @@ def availabilit(key: str):
 
         existing_av = [
             grist_json_to_dataclass(av_rec, AvailabilityRecord)
-            for av_rec in  CLIENT.get_records(
+            for av_rec in CLIENT.get_records(
                 "Availability", filter={
                     "Request_group": [av_request.request_group],
                     "Person": [av_request.person],

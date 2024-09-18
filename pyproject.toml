@@ -26,4 +26,43 @@ jinja2 = "^3.1.2"
 requests = "^2.31"
 pygrist-mini  = "^2024.1"
 
+[tool.poetry.dev-dependencies]
+ruff = "^0.6.1"
+mypy = "^1.11.2"
+
+[tool.ruff]
+target-version = "py38"
+preview = true
+
+[tool.ruff.lint]
+extend-select = [
+    "B",   # flake8-bugbear
+    "C",   # flake8-comprehensions
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "G",   # flake8-logging-format
+    "I",   # flake8-isort
+    "N",   # pep8-naming
+    "NPY", # numpy
+    "Q",   # flake8-quotes
+    "UP",  # pyupgrade
+    "RUF", # ruff
+    "W",   # pycodestyle
+]
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "double"
+multiline-quotes = "double"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-local-folder = [
+    "pytools",
+]
+lines-after-imports = 2
+
+[tool.mypy]
+ignore_missing_imports = true
+
 # vim: foldmethod=marker
