@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import dataclasses
 import datetime
 import json
 import os
 from time import time
 from typing import (
-    Any, Dict, Hashable, Optional, Sequence, Type, TypeVar, Union, cast, get_args,
+    Any, Callable, Dict, Hashable, Mapping, Optional, Sequence, Type, TypeVar, Union, cast, get_args,
     get_origin)
 
 from flask import Flask, Response, flash, request, url_for
@@ -45,10 +47,10 @@ class AvailabilityRequest:
     key: str
     person: Any
     name: str
-    allow_maybe: Optional[bool]
+    allow_maybe: bool | None
     message: str
-    min_span_minutes: Optional[float]
-    responded: Optional[float]  # unix timestamp
+    min_span_minutes: float | None
+    responded: float | None  # unix timestamp
     response: str
 
 
@@ -66,7 +68,7 @@ class TimeSlot:
     rspan_id: int
     start: datetime.datetime
     end: datetime.datetime
-    available: Optional[bool]
+    available: bool | None
 
 
 @dataclasses.dataclass(frozen=True)
@@ -74,6 +76,17 @@ class TimeSpan:
     start: datetime.datetime
     end: datetime.datetime
     maybe: bool
+
+
+@dataclasses.dataclass(frozen=True)
+class AvailabilityRecord:
+    id: int
+    person: Any
+    request_timespan: int | None
+    available: bool | None
+    maybe: bool
+    start: datetime.datetime
+    end: datetime.datetime
 
 
 def span_props_equal(sa: TimeSpan, sb: TimeSpan) -> bool:
@@ -91,33 +104,61 @@ class ValidationError(Exception):
 T = TypeVar("T")
 
 
-def cast_to_type(t: Type[T], val: Any) -> Any:
-    if t is datetime.datetime and isinstance(val, str):
-        return datetime.datetime.fromisoformat(val)
-    elif type(t).__module__ != "typing":
-        return t(val)  # type: ignore[call-arg]
+def cast_datetime(x: str | int) -> datetime.datetime:
+    if isinstance(x, str):
+        # fullcalendar does this
+        return datetime.datetime.fromisoformat(x)
+    elif isinstance(x, int):
+        # grist does this
+        return datetime.datetime.fromtimestamp(x)
     else:
-        return val
+        return AssertionError()
+
+
+NAME_TO_CASTER: Mapping[str, Callable[[Any], Any] ]= {
+    "Any": lambda x: x,
+    "Hashable": lambda x: x,
+    "int": int,
+    "datetime.datetime": cast_datetime,
+    "str": str,
+    "bool": bool,
+    "float": float,
+}
+
+
+def type_str_to_caster(t: str) -> Callable[[Any], Any]:
+    type_names = [tn.strip() for tn in t.split("|")]
+    if len(type_names) >= 2:
+        tn, none = type_names
+        assert none == "None"
+        nullable = True
+    else:
+        tn, = type_names
+        nullable = False
+
+    caster = NAME_TO_CASTER[tn]
+
+    if nullable:
+        def nullable_caster(obj: Any) -> Any:
+            if obj is None:
+                return obj
+            else:
+                return caster(obj)
+
+        return nullable_caster
+    else:
+        return caster
 
 
 def json_to_dataclass(kv: Dict[str, Any], dataclass_type: Type[T]) -> T:
-    kwargs = {}
     assert dataclasses.is_dataclass(dataclass_type)
 
     for f in dataclasses.fields(dataclass_type):
-        if (get_origin(f.type) is Union
-                and len(get_args(f.type)) == 2
-                and type(None) in get_args(f.type)):
-            tp, = [t for t in get_args(f.type) if t is not type(None)]
-            val = kv.get(f.name)
-            if val is not None:
-                val = cast_to_type(tp, val)
-
-            kwargs[f.name] = val
-        else:
-            kwargs[f.name] = cast_to_type(f.type, kv[f.name])
-
-    return cast(T, dataclass_type(**kwargs))
+        type_str_to_caster(f.type)(kv[f.name])
+    return cast(T, dataclass_type(**{
+        f.name: type_str_to_caster(f.type)(kv[f.name])
+        for f in dataclasses.fields(dataclass_type)
+    }))
 
 
 def grist_json_to_dataclass(kv: Dict[str, Any], dataclass_type: Type[T]) -> T:
@@ -357,15 +398,42 @@ def availabilit(key: str):
 
     if request.method == "GET":
         if av_request.responded is not None:
-            return respond_with_message(
-                "Your availability has previously been submitted. ", "error")
+            flash(
+                "Your availability has previously been submitted. "
+                "If you submit this page, your previous response will "
+                "be replaced.", "info")
 
-        return render_calendar(av_request, req_timespans)
+        existing_av = [
+            grist_json_to_dataclass(av_rec, AvailabilityRecord)
+            for av_rec in  CLIENT.get_records(
+                "Availability", filter={
+                    "Request_group": [av_request.request_group],
+                    "Person": [av_request.person],
+                })
+            ]
+        return render_calendar(av_request, req_timespans,
+                spans=[
+                    TimeSpan(
+                        start=av.start,
+                        end=av.end,
+                        maybe=av.maybe,
+                        )
+                    for av in existing_av
+                    # strangely, grist seems to give us 0 for None here?
+                    if not av.request_timespan],
+                slots=[TimeSlot(
+                        rspan_id=av.request_timespan,
+                        start=av.start,
+                        end=av.end,
+                        available=av.available,
+                        )
+                    for av in existing_av if av.request_timespan],
+                )
     else:
         if av_request.responded is not None:
-            return respond_with_message(
-                "Your availability has previously been submitted. "
-                "The present response has not been recorded.", "error")
+            flash(
+                "Your availability had previously been submitted. "
+                "The previous response is being replaced.", "info")
 
         cal_data = json.loads(request.form["calendarState"])
         cal_slots = [json_to_dataclass(s, TimeSlot) for s in cal_data["slots"]]
@@ -400,9 +468,18 @@ def availabilit(key: str):
             })
         ])
 
+        existing_av_ids = [av["id"] for av in CLIENT.get_records(
+                "Availability", filter={
+                    "Request_group": [av_request.request_group],
+                    "Person": [av_request.person],
+                })]
+        if existing_av_ids:
+            CLIENT.delete_records("Availability", existing_av_ids)
+
         CLIENT.add_records("Availability", [{
                 "Request_group": av_request.request_group,
                 "Person": av_request.person,
+                "Request_timespan": None,
                 "Start": span.start.timestamp(),
                 "End": span.end.timestamp(),
                 "Available": True,
@@ -434,7 +511,11 @@ def availabilit(key: str):
 
         # }}}
 
-        return respond_with_message("Thank you for submitting your availability.")
+        return respond_with_message(
+                "Thank you for submitting your availability. "
+                "If you need to edit your availability, you may do so by revisiting "
+                "the same link."
+            )
 
 
 # vim: foldmethod=marker

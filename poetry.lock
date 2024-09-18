@@ -305,13 +305,13 @@ files = [
 
 [[package]]
 name = "pygrist-mini"
-version = "2023.2.1"
+version = "2024.1"
 description = "Minimal Grist API (document) client"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pygrist_mini-2023.2.1-py2.py3-none-any.whl", hash = "sha256:7e927ea9dfcd3d4cd5a695444c96d118eed9d0d8a42db52a0d416772d21f514c"},
-    {file = "pygrist_mini-2023.2.1.tar.gz", hash = "sha256:72d8cf3f55da4bbc4c81f6a852225d78fc87bb7689c32d7f557ec7c14abd867e"},
+    {file = "pygrist_mini-2024.1-py2.py3-none-any.whl", hash = "sha256:14b6eb7fa68f501552eca68032023bf81b3422aa369cb4ec4cc910b65a28064c"},
+    {file = "pygrist_mini-2024.1.tar.gz", hash = "sha256:cfd3e865b28944ebe2521e3f1ca74a7dc2523f42f378637643f7b016bf689697"},
 ]
 
 [package.dependencies]
@@ -394,4 +394,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.13"
-content-hash = "284d4e8b2f8d42c741cd3fed7fe86a7d31f76ae5e0202847c7aa0b2da6530cee"
+content-hash = "f5a7a35ddb568633487b784f5a3f89b4bdf25e17bcff41ac1ffc68021c400126"
