@@ -18,6 +18,10 @@ from typing import (
 from flask import Flask, Response, flash, request, url_for
 from jinja2 import Environment, PackageLoader, StrictUndefined, select_autoescape
 from pygrist_mini import GristClient
+from zoneinfo import ZoneInfo
+
+
+UTC = ZoneInfo("UTC")
 
 
 app = Flask(__name__)
@@ -116,7 +120,7 @@ def cast_datetime(x: str | int) -> datetime.datetime:
         return datetime.datetime.fromisoformat(x)
     elif isinstance(x, int):
         # grist does this
-        return datetime.datetime.fromtimestamp(x)
+        return datetime.datetime.fromtimestamp(x, tz=UTC)
     else:
         return AssertionError()
 
