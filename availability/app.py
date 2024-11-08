@@ -464,8 +464,11 @@ def availabilit(key: str):
 
         except ValidationError as e:
             flash(f"Error: {e}", "error")
-            return render_calendar(av_request, req_timespans,
-                                   spans=cal_spans, slots=cal_slots)
+            av_request = dataclasses.replace(av_request, response=text_response)
+            return render_calendar(
+                                   av_request, req_timespans,
+                                   spans=cal_spans, slots=cal_slots,
+                               )
 
         # {{{ save to database
 
