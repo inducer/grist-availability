@@ -18,7 +18,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
+python = ">=3.10"
 
 flask = "^3.0.0"
 jinja2 = "^3.1.2"
