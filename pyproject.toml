@@ -49,6 +49,9 @@ extend-select = [
     "RUF", # ruff
     "W",   # pycodestyle
 ]
+extend-ignore = [
+    "C901",   # McCabe
+]
 
 [tool.ruff.lint.flake8-quotes]
 docstring-quotes = "double"
