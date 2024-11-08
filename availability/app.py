@@ -437,7 +437,7 @@ def availabilit(key: str):
                         )
                     for av in existing_av if av.request_timespan],
                 )
-    else:
+    elif request.method == "POST":
         if av_request.responded is not None:
             flash(
                 "Your availability had previously been submitted. "
@@ -527,6 +527,8 @@ def availabilit(key: str):
                 "If you need to edit your availability, you may do so by revisiting "
                 "the same link."
             )
+    else:
+        raise ValueError(f"unexpected request method: '{request.method}'")
 
 
 # vim: foldmethod=marker
