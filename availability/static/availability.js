@@ -53,22 +53,29 @@ function calSelect(info) {
   styleEvent(ev);
 }
 
+function fullcalDateToISO(date, calendar) {
+  // eslint-disable-next-line no-undef
+  return FullCalendar.Luxon3.toLuxonDateTime(date, calendar).toISO();
+}
+
 function onSubmit() {
   const slots = [];
   const spans = [];
 
-  document.calendarInstance.getEvents().forEach((ev) => {
+  const cal = document.calendarInstance;
+
+  cal.getEvents().forEach((ev) => {
     if (ev.extendedProps.type === 'slot') {
       slots.push({
         rspan_id: ev.extendedProps.rspan_id,
-        start: ev.start,
-        end: ev.end,
+        start: fullcalDateToISO(ev.start, cal),
+        end: fullcalDateToISO(ev.end, cal),
         available: ev.extendedProps.available,
       });
     } else if (ev.extendedProps.type === 'span') {
       spans.push({
-        start: ev.start,
-        end: ev.end,
+        start: fullcalDateToISO(ev.start, cal),
+        end: fullcalDateToISO(ev.end, cal),
         maybe: ev.extendedProps.maybe,
       });
     }
@@ -84,7 +91,7 @@ function onSubmit() {
 }
 
 // eslint-disable-next-line no-unused-vars
-function initialize(initialDate, nDays, events, hasSpans) {
+function initialize(initialDate, nDays, events, hasSpans, timezones) {
   document.addEventListener(
     'DOMContentLoaded',
     () => {
@@ -92,6 +99,7 @@ function initialize(initialDate, nDays, events, hasSpans) {
       // eslint-disable-next-line no-undef
       const calendar = new FullCalendar.Calendar(calendarEl, {
         // plugins: [timeGridPlugin],
+        timeZone: timezones[0],
         initialView: 'timeGridNDay',
         headerToolbar: {
           start: false,
@@ -122,6 +130,25 @@ function initialize(initialDate, nDays, events, hasSpans) {
 
       document.calendarInstance = calendar;
       document.getElementById('submitButton').addEventListener('click', onSubmit);
+      document.getElementById('calPreviousButton').addEventListener('click', () => {
+        calendar.prev();
+      });
+      document.getElementById('calNextButton').addEventListener('click', () => {
+        calendar.next();
+      });
+
+      const tzSelect = document.getElementById('timezone');
+      for (let i = 0; i < timezones.length; i += 1) {
+        const opt = document.createElement('option');
+        const tzName = timezones[i];
+        opt.value = tzName;
+        opt.innerHTML = tzName;
+        tzSelect.appendChild(opt);
+      }
+
+      tzSelect.addEventListener('change', () => {
+        calendar.setOption('timeZone', tzSelect.value);
+      });
     },
   );
 }

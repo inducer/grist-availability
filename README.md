@@ -77,6 +77,7 @@ env = GRIST_ROOT_URL=https://grist.tiker.net
 env = GRIST_API_KEY_FILE=/home/grist-av/.grist-api-key
 env = GRIST_DOC_ID=rLJPGJ9RLJ4TRVx4AxT2tW
 env = SECRET_KEY=CHANGE_ME
+env = CAL_TIMEZONES=America/Chicago,local,UTC
 
 # Optional. Only effective if both are provided.
 env = NOTIFY_FROM=andreask@illinois.edu
