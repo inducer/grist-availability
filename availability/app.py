@@ -522,11 +522,12 @@ def availabilit(key: str):
 
         # }}}
 
-        return respond_with_message(
-                "Thank you for submitting your availability. "
-                "If you need to edit your availability, you may do so by revisiting "
-                "the same link."
-            )
+        flash(
+            "Thank you for submitting your availability. "
+            "If you need to edit your availability, you may do so by revisiting "
+            "the same link.")
+        return render_calendar(av_request, req_timespans, cal_spans, cal_slots)
+
     else:
         raise ValueError(f"unexpected request method: '{request.method}'")
 
