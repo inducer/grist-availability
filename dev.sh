@@ -8,6 +8,8 @@ export GRIST_DOC_ID="s7VzXiAHXbwgivucYprb6z"
 export NOTIFY_FROM="inform@tiker.net"
 export NOTIFY_TO="inform@tiker.net"
 
+export CAL_TIMEZONES="America/Chicago,local,UTC"
+
 export SECRET_KEY="CHANGE_ME"
 
 poetry run flask --app=availability.app run --debug

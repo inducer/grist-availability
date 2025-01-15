@@ -279,6 +279,9 @@ def render_calendar(
     if slots is None:
         slots = []
 
+    timezones = [tzname.strip()
+        for tzname in os.environ.get("CAL_TIMEZONES", "local,UTC").split(",")]
+
     initial_date = None
     last_date = None
     events = []
@@ -322,8 +325,8 @@ def render_calendar(
     if has_spans:
         for span in spans:
             events.append({
-                "start": span.start.isoformat(),
-                "end": span.end.isoformat(),
+                "start": span.start.timestamp() * 1000,
+                "end": span.end.timestamp() * 1000,
                 "editable": True,
                 "extendedProps": {
                     "type": "span",
@@ -350,7 +353,8 @@ def render_calendar(
         js_url=url_for("static", filename="availability.js"),
         has_slots=has_slots,
         allow_maybe=av_request.allow_maybe,
-        has_spans=has_spans)
+        has_spans=has_spans,
+        timezones=timezones)
 
 
 def send_notify(av_request: AvailabilityRequest, text_response: str,

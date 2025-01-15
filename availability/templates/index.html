@@ -1,14 +1,17 @@
 {% extends "base.html" %}
 
 {% block in_head %}
-  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+  <script src='https://cdn.jsdelivr.net/npm/luxon@3.5.0/build/global/luxon.min.js'></script>
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+  <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/luxon3@6.1.15/index.global.min.js'></script>
   <script src='{{ js_url }}'></script>
   <script>
     const events = {{ events | tojson }};
     const allowMaybe = {{ allow_maybe | tojson }};
     const initialDate = {{ initial_date }};
     const nDays = {{ number_of_days }};
-    initialize(initialDate, nDays, events, {{ has_spans | tojson }});
+    initialize(initialDate, nDays, events,
+        {{ has_spans | tojson }}, {{ timezones | tojson }});
   </script>
 {% endblock %}
 
@@ -37,8 +40,6 @@
         <li>For time slots shown in blue, please click to indicate your availability
           (green) or unavailability (red).</li>
         {% endif %}
-        <li>The calendar is shown in the <b>local time zone</b> known to your browser.
-          So please fill out the poll using your own local times.</li>
         <li>If using this on a <b>touch device</b>: 
           To create a time range: hold on a time until a highlight appears, then drag.
           To edit a time range: hold on that time range until selected, then drag
@@ -49,17 +50,34 @@
     </div>
   </div>
   <h5 class="mt-3">Poll for {{ av_request.name }}</h5>
-  <div id='calendar'></div>
   <form id="calendarForm" method="POST" class="mt-3">
     <div class="form-floating mb-3">
       <textarea class="form-control"  id="response" name="response" placeholder="..."
         >{{ av_request.response }}</textarea>
-      <label for="response">Comments / Response to questions (see help text)</label>
+      <label for="response">Enter response text/comment here (optional, see below)</label>
       {% if av_request.message %}
         <div class="form-text">{{ av_request.message }}</div>
       {% endif %}
     </div>
+    <div class="row mb-3">
+      <div class="col-sm-1">
+        <button type="button" id="submitButton" class="btn btn-primary">Submit</button>
+      </div>
+      <div class="col-sm-1">
+        <div class="input-group">
+          <button type="button" id="calPreviousButton" class="btn btn-secondary"><i class="bi bi-caret-left-fill"></i></button>
+          <button type="button" id="calNextButton" class="btn btn-secondary"><i class="bi bi-caret-right-fill"></i></button>
+        </div>
+      </div>
+      <div class="col-sm-10">
+        <div class="input-group">
+          <label for="timezone" class="input-group-text">Timezone:</label>
+          <select class="form-select" aria-label="Timezone selector" id="timezone">
+          </select>
+        </div>
+      </div>
+    </div>
+    <div id='calendar'></div>
     <input type="hidden" id="calendarState" name="calendarState"></input>
-    <button type="button" id="submitButton" class="btn btn-primary">Submit</button>
   </form>
 {% endblock %}
