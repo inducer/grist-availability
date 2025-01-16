@@ -47,6 +47,22 @@
         </li>
         <li>When done, please press <b>submit</b> below.</li>
       </ul>
+      {% if context_descr %}
+          The availability of others is also shown in the calendar,
+          as illustrated below:
+          <ul>
+            {% for descr, color in context_descr %}
+              <li>
+                <span style="
+                    background-color: {{ color }};
+                    border-radius: 3px;
+                    padding: 1px;"
+                  >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                {{ descr }}
+              </li>
+            {% endfor %}
+          </ul>
+      {% endif %}
     </div>
   </div>
   <h5 class="mt-3">Poll for {{ av_request.name }}</h5>

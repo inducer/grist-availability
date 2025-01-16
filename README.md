@@ -52,6 +52,15 @@ from there.
     allowing the user to draw their availability over it. If no, only allows
     the user to say yes/no to each timespan.
 
+`Contextual_availability_requests` (optional) has columns:
+
+-   `Request`: Reference to `Availability_requests`. The request for which
+    context is being provided.
+-   `Description`: A description of the contextual relationship
+    (e.g. "student"/"instructor").
+-   `Contextual_request`:  Reference to `Availability_requests`.
+    The request from which contextual data should be shown.
+
 ### Output
 
 `Availability`:

@@ -17,7 +17,7 @@ from typing import (
 
 from flask import Flask, Response, flash, request, url_for
 from jinja2 import Environment, PackageLoader, StrictUndefined, select_autoescape
-from pygrist_mini import GristClient
+from pygrist_mini import GristClient, HTTPError
 from zoneinfo import ZoneInfo
 
 
@@ -269,15 +269,26 @@ def get_flashed_messages():
     return msgs
 
 
+context_color_palette: list[str] = [
+    f"hsl({h}, 50%, 80%)"
+    for h in range(0, 256, 32)
+]
+
+
 def render_calendar(
-        av_request: AvailabilityRequest,
-        req_timespans: Sequence[RequestTimespan],
-        spans: Sequence[TimeSpan] | None = None,
-        slots: Sequence[TimeSlot] | None = None):
+            av_request: AvailabilityRequest,
+            req_timespans: Sequence[RequestTimespan],
+            spans: Sequence[TimeSpan] | None = None,
+            slots: Sequence[TimeSlot] | None = None,
+            contextual_av: Sequence[
+                tuple[str, Sequence[AvailabilityRecord]]] | None = None,
+        ) -> str:
     if spans is None:
         spans = []
     if slots is None:
         slots = []
+    if contextual_av is None:
+        contextual_av = []
 
     timezones = [tzname.strip()
         for tzname in os.environ.get("CAL_TIMEZONES", "local,UTC").split(",")]
@@ -343,6 +354,20 @@ def render_calendar(
     else:
         number_of_days = 1
 
+    context_descr = []
+    for i, (name, avrecs) in enumerate(contextual_av):
+        color = context_color_palette[i % len(context_color_palette)]
+        events.extend({
+                "start": avrec.start.timestamp() * 1000,
+                "end": avrec.end.timestamp() * 1000,
+                "display": "background",
+                "backgroundColor": color,
+                }
+            for avrec in avrecs)
+
+        if avrecs:
+            context_descr.append((name, color))
+
     template = JINJA_ENV.get_template("index.html")
     return template.render(
         messages=get_flashed_messages(),
@@ -354,7 +379,9 @@ def render_calendar(
         has_slots=has_slots,
         allow_maybe=av_request.allow_maybe,
         has_spans=has_spans,
-        timezones=timezones)
+        timezones=timezones,
+        context_descr=context_descr,
+    )
 
 
 def send_notify(av_request: AvailabilityRequest, text_response: str,
@@ -408,6 +435,37 @@ def availability_for_request(
         ]
 
 
+def gather_contextual_availability(
+            av_request: AvailabilityRequest,
+        ) -> Sequence[tuple[str, Sequence[AvailabilityRecord]]]:
+    try:
+        contextual_requests = CLIENT.get_records(
+                        "Contextual_availability_requests",
+                        filter={"Request": [av_request.id]})
+
+    except HTTPError as err:
+        if err.status_code == 404:
+            # Table doesn't exist, that's OK
+            return []
+
+        raise
+
+    result = []
+    for creq_dict in contextual_requests:
+        creq = creq_dict["fields"]
+        c_av_reqs = CLIENT.get_records("Availability_requests",
+                                         filter={"id": [creq["Contextual_request"]]})
+        assert len(c_av_reqs) <= 1
+        if not c_av_reqs:
+            continue
+
+        result.append((creq["Description"],
+                      availability_for_request(
+                          grist_json_to_dataclass(c_av_reqs[0], AvailabilityRequest))))
+
+    return result
+
+
 @app.route("/availability/<key>", methods=["GET", "POST"])
 def availabilit(key: str):
     av_requests = CLIENT.get_records("Availability_requests", filter={"Key": [key]})
@@ -420,6 +478,8 @@ def availabilit(key: str):
     av_request = grist_json_to_dataclass(av_requests[0], AvailabilityRequest)
 
     req_timespans = get_request_timespans(av_request.request_group)
+
+    contextual_av = gather_contextual_availability(av_request)
 
     if request.method == "GET":
         if av_request.responded is not None:
@@ -446,6 +506,7 @@ def availabilit(key: str):
                         available=av.available,
                         )
                     for av in existing_av if av.request_timespan],
+                contextual_av=contextual_av,
                 )
     elif request.method == "POST":
         if av_request.responded is not None:
@@ -478,6 +539,7 @@ def availabilit(key: str):
             return render_calendar(
                                    av_request, req_timespans,
                                    spans=cal_spans, slots=cal_slots,
+                                   contextual_av=contextual_av,
                                )
 
         # {{{ save to database
@@ -536,7 +598,8 @@ def availabilit(key: str):
             "Thank you for submitting your availability. "
             "If you need to edit your availability, you may do so by revisiting "
             "the same link.")
-        return render_calendar(av_request, req_timespans, cal_spans, cal_slots)
+        return render_calendar(av_request, req_timespans, cal_spans, cal_slots,
+                               contextual_av=contextual_av)
 
     else:
         raise ValueError(f"unexpected request method: '{request.method}'")
