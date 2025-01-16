@@ -395,6 +395,19 @@ def respond_with_message(msg: str, category="message", status: int | None = None
     return Response(resp_text, status)
 
 
+def availability_for_request(
+            av_request: AvailabilityRequest
+        ) -> Sequence[AvailabilityRecord]:
+    return [
+        grist_json_to_dataclass(av_rec, AvailabilityRecord)
+        for av_rec in CLIENT.get_records(
+            "Availability", filter={
+                "Request_group": [av_request.request_group],
+                "Person": [av_request.person],
+            })
+        ]
+
+
 @app.route("/availability/<key>", methods=["GET", "POST"])
 def availabilit(key: str):
     av_requests = CLIENT.get_records("Availability_requests", filter={"Key": [key]})
@@ -415,14 +428,7 @@ def availabilit(key: str):
                 "If you submit this page, your previous response will "
                 "be replaced.", "info")
 
-        existing_av = [
-            grist_json_to_dataclass(av_rec, AvailabilityRecord)
-            for av_rec in CLIENT.get_records(
-                "Availability", filter={
-                    "Request_group": [av_request.request_group],
-                    "Person": [av_request.person],
-                })
-            ]
+        existing_av = availability_for_request(av_request)
         return render_calendar(av_request, req_timespans,
                 spans=[
                     TimeSpan(
