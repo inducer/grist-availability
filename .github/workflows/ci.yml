@@ -16,16 +16,12 @@ jobs:
             uses: actions/setup-python@v5
             with:
                 python-version: '3.x'
-        -   name: Install Poetry
-            uses: snok/install-poetry@v1.3.4
-            with:
-              version: "1.8.3"
-              virtualenvs-create: true
+        -   name: Install uv
+            uses: astral-sh/setup-uv@v5
         -   name: "Main Script"
             run: |
-                poetry install
-                poetry run ruff check
-                poetry run mypy availability
+                uv run ruff check
+                uv run mypy availability
 
     eslint:
         runs-on: ubuntu-latest
