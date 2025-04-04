@@ -169,7 +169,7 @@ def json_to_dataclass(kv: dict[str, Any], dataclass_type: type[T]) -> T:
     }))
 
 
-def grist_json_to_dataclass(kv: dict[str, Any], dataclass_type: type[T]) -> T:
+def grist_json_to_dataclass(kv: Mapping[str, Any], dataclass_type: type[T]) -> T:
     fields = {n.lower(): v for n, v in kv["fields"].items()}
     fields["id"] = kv["id"]
     return json_to_dataclass(fields, dataclass_type)
