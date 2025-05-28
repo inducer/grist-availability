@@ -96,6 +96,7 @@ function initialize(initialDate, nDays, events, hasSpans, timezones) {
     'DOMContentLoaded',
     () => {
       const calendarEl = document.getElementById('calendar');
+      const aspectRatio = window.screen.height > window.screen.width ? 0.6 : 1.35;
       // eslint-disable-next-line no-undef
       const calendar = new FullCalendar.Calendar(calendarEl, {
         // plugins: [timeGridPlugin],
@@ -124,6 +125,7 @@ function initialize(initialDate, nDays, events, hasSpans, timezones) {
         eventClick,
         selectable: hasSpans,
         select: calSelect,
+        aspectRatio,
       });
       calendar.getEvents().forEach(styleEvent);
       calendar.render();
