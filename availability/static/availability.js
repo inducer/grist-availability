@@ -1,3 +1,5 @@
+let isDirty = false;
+
 function styleEvent(ev) {
   if (ev.extendedProps.type === 'slot') {
     if (ev.extendedProps.available === true) {
@@ -31,6 +33,7 @@ function eventClick(info) {
     } else if (!ev.extendedProps.available) {
       ev.setExtendedProp('available', null);
     }
+    isDirty = true;
   }
   if (ev.extendedProps.type === 'span') {
     if (info.jsEvent.shiftKey) {
@@ -39,6 +42,7 @@ function eventClick(info) {
     } else if (allowMaybe) {
       ev.setExtendedProp('maybe', !ev.extendedProps.maybe);
     }
+    isDirty = true;
   }
   styleEvent(ev);
 }
@@ -51,6 +55,7 @@ function calSelect(info) {
     extendedProps: { type: 'span', maybe: false },
   });
   styleEvent(ev);
+  isDirty = true;
 }
 
 function fullcalDateToISO(date, calendar) {
@@ -59,6 +64,7 @@ function fullcalDateToISO(date, calendar) {
 }
 
 function onSubmit() {
+  isDirty = false;
   const slots = [];
   const spans = [];
 
@@ -126,6 +132,8 @@ function initialize(initialDate, nDays, events, hasSpans, timezones) {
         selectable: hasSpans,
         select: calSelect,
         aspectRatio,
+        eventDrop: () => { isDirty = true; },
+        eventResize: () => { isDirty = true; },
       });
       calendar.getEvents().forEach(styleEvent);
       calendar.render();
@@ -137,6 +145,18 @@ function initialize(initialDate, nDays, events, hasSpans, timezones) {
       });
       document.getElementById('calNextButton').addEventListener('click', () => {
         calendar.next();
+      });
+
+      document.getElementById('response').addEventListener('input', () => {
+        isDirty = true;
+      });
+
+      window.addEventListener('beforeunload', (e) => {
+        if (isDirty) {
+          e.preventDefault();
+          // eslint-disable-next-line no-param-reassign
+          e.returnValue = '';
+        }
       });
 
       const tzSelect = document.getElementById('timezone');
