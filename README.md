@@ -75,29 +75,37 @@ from there.
 -   `Request_timespan`: (reference to `Request_timespan`)
     Added if `Allow partial` is false for a given span.
 
-## UWSGI config for deployment
+## Systemd service file for deployment
 
 ```
-[uwsgi]
-plugins = python311
-socket = /tmp/uwsgi-grist-av.sock
+[Unit]
+Description=Grist Availability via Granian
+After=network.target
 
-env = GRIST_ROOT_URL=https://grist.tiker.net
-env = GRIST_API_KEY_FILE=/home/grist-av/.grist-api-key
-env = GRIST_DOC_ID=rLJPGJ9RLJ4TRVx4AxT2tW
-env = SECRET_KEY=CHANGE_ME
-env = CAL_TIMEZONES=America/Chicago,local,UTC
+[Service]
+User={{ user }}
+Group={{ user }}
 
-# Optional. Only effective if both are provided.
-env = NOTIFY_FROM=andreask@illinois.edu
-env = NOTIFY_TO=andreask@illinois.edu
+WorkingDirectory={{ home_dir }}/grist-availability
 
-chdir = /home/grist-av/grist-availability
-module=availability.app:app
-uid = grist-av
-gid = grist-av
-need-app = 1
-workers = 1
-virtualenv=/home/grist-av/grist-availability/.venv
-buffer-size = 16384
+Environment="GRANIAN_HOST=127.0.0.1"
+Environment="GRANIAN_PORT=8123"
+Environment="GRANIAN_WORKERS=1"
+Environment="GRANIAN_WORKERS_MAX_RSS=500"
+Environment="GRANIAN_INTERFACE=wsgi"
+Environment="GRANIAN_RESPAWN_FAILED_WORKERS=true"
+
+Environment=GRIST_ROOT_URL=https://scicomp-grist.cs.illinois.edu
+Environment=GRIST_API_KEY_FILE={{ home_dir }}/.grist-api-key
+Environment=GRIST_DOC_ID={{ grist_doc_id }}
+Environment=NOTIFY_FROM=andreask@illinois.edu
+Environment=NOTIFY_TO=andreask@illinois.edu
+Environment=SECRET_KEY={{ flask_secret_key }}
+
+Environment=CAL_TIMEZONES=America/Chicago,local,UTC
+
+ExecStart={{ home_dir }}/grist-availability/.venv/bin/granian availability.app:app
+
+[Install]
+WantedBy=multi-user.target
 ```

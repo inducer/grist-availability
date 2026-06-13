@@ -4,18 +4,19 @@ import dataclasses
 import datetime
 import json
 import os
+from collections.abc import Mapping, Sequence
 from time import time
 from typing import (
     Any,
     Callable,
     Hashable,
-    Mapping,
-    Sequence,
+    Literal,
     TypeVar,
     cast,
 )
 
 from flask import Flask, Response, flash, request, url_for
+from granian.utils.proxies import wrap_wsgi_with_proxy_headers
 from jinja2 import Environment, PackageLoader, StrictUndefined, select_autoescape
 from pygrist_mini import GristClient, HTTPError
 from zoneinfo import ZoneInfo
@@ -24,8 +25,12 @@ from zoneinfo import ZoneInfo
 UTC = ZoneInfo("UTC")
 
 
-app = Flask(__name__)
-app.secret_key = os.environ["SECRET_KEY"]
+flask_app = Flask(__name__)
+flask_app.secret_key = os.environ["SECRET_KEY"]
+
+
+app = wrap_wsgi_with_proxy_headers(flask_app)
+
 
 JINJA_ENV = Environment(
     loader=PackageLoader("availability"),
@@ -414,7 +419,10 @@ def send_notify(av_request: AvailabilityRequest, text_response: str,
     s.quit()
 
 
-def respond_with_message(msg: str, category="message", status: int | None = None):
+def respond_with_message(
+            msg: str,
+            category: Literal["message", "error"] = "message",
+            status: int | None = None):
     flash(msg, category)
     resp_text = (JINJA_ENV
             .get_template("base.html")
@@ -466,7 +474,7 @@ def gather_contextual_availability(
     return result
 
 
-@app.route("/availability/<key>", methods=["GET", "POST"])
+@flask_app.route("/availability/<key>", methods=["GET", "POST"])
 def availabilit(key: str):
     av_requests = CLIENT.get_records("Availability_requests", filter={"Key": [key]})
     if not av_requests:
